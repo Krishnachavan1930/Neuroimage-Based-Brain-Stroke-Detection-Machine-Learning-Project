@@ -1,0 +1,11 @@
+.venv/
+venv/
+.idea/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.log
+
+# Ignore large model files and raw datasets
+*.h5
+brain-stroke-module-1/Dataset/
