@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings | StrokeAI{% endblock %}
+
+{% block content %}
+<div class="card p-4 shadow-sm border-0 mb-4">
+    <h4 class="mb-1"><i class="bi bi-sliders text-primary me-2"></i> Clinical Portal Settings</h4>
+    <p class="text-muted small mb-0">Configure hospital branding, version references, and diagnostic settings.</p>
+</div>
+
+<div class="row g-4">
+    <!-- SETTINGS MODULE PANEL -->
+    <div class="col-lg-8">
+        <form class="card shadow-sm border-0 p-4" action="/settings/save" method="post">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-hospital me-2"></i> Hospital Branding & Metadata</h5>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Hospital Name</label>
+                    <input type="text" class="form-control" name="hospital_name" value="{{ settings.hospital_name }}" required placeholder="Enter hospital name">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Hospital Address</label>
+                    <textarea class="form-control" name="hospital_address" rows="2" required placeholder="Hospital physical address">{{ settings.hospital_address }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">System Theme</label>
+                    <select class="form-select" name="system_theme" disabled>
+                        <option value="LightBlue" selected>Clinical Light Blue (Default)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Logo Path / Icon (SVG/PNG)</label>
+                    <input type="text" class="form-control" name="hospital_logo" value="{{ settings.hospital_logo }}" required>
+                </div>
+            </div>
+
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-activity me-2"></i> Diagnostic Thresholds</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Stroke Prediction Threshold (Sigmoid)</label>
+                    <div class="input-group">
+                        <input type="number" step="0.05" min="0.1" max="0.9" class="form-control" name="prediction_threshold" value="{{ settings.prediction_threshold }}" required>
+                        <span class="input-group-text">> 0.5 maps to Stroke Detected</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary rounded-pill px-5"><i class="bi bi-save me-1"></i> Save Configuration</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- METRICS & SYSTEM DETAILS PANEL -->
+    <div class="col-lg-4">
+        <div class="card p-4 shadow-sm border-0 mb-4 bg-dark text-white">
+            <h5 class="card-title border-bottom border-secondary pb-2 mb-3"><i class="bi bi-info-circle me-2"></i> Software Details</h5>
+            <ul class="list-group list-group-flush list-group-dark text-white small">
+                <li class="list-group-item bg-transparent text-white-50 d-flex justify-content-between px-0">
+                    <span>Application Version</span>
+                    <span class="text-white fw-bold">{{ settings.app_version }}</span>
+                </li>
+                <li class="list-group-item bg-transparent text-white-50 d-flex justify-content-between px-0">
+                    <span>Neural Model Engine</span>
+                    <span class="text-white fw-bold">{{ settings.model_version }}</span>
+                </li>
+                <li class="list-group-item bg-transparent text-white-50 d-flex justify-content-between px-0">
+                    <span>Model Framework</span>
+                    <span class="text-white fw-bold">TensorFlow / Keras</span>
+                </li>
+                <li class="list-group-item bg-transparent text-white-50 d-flex justify-content-between px-0">
+                    <span>Database Engine</span>
+                    <span class="text-white fw-bold">SQLite v3.x</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

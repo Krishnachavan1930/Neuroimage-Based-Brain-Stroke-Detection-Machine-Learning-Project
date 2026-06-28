@@ -3,84 +3,141 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Hugo 0.84.0">
-    <title>Signin </title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="./static/css/solution.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/sign-in/">
-    <link rel = "icon" href ="./static/images/bezier.png" type = "image/x-icon">
-
-
-    <!-- Bootstrap core CSS -->
-<link href="/docs/5.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
-    <!-- Favicons -->
-<link rel="apple-touch-icon" href="/docs/5.0/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
-<link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
-<link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
-<link rel="manifest" href="/docs/5.0/assets/img/favicons/manifest.json">
-<link rel="mask-icon" href="/docs/5.0/assets/img/favicons/safari-pinned-tab.svg" color="#7952b3">
-<link rel="icon" href="/docs/5.0/assets/img/favicons/favicon.ico">
-<meta name="theme-color" content="#7952b3">
-
-
+    <title>Clinical Login | StrokeAI</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
     <style>
-      .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        user-select: none;
-      }
-
-      @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-          font-size: 3.5rem;
+        :root {
+            --primary-color: #0F4C81;
+            --secondary-color: #1E293B;
+            --body-bg: #f1f5f9;
         }
-      }
 
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F4C81 0%, #1E293B 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 440px;
+            padding: 40px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-logo {
+            color: var(--primary-color);
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--secondary-color);
+            letter-spacing: -0.5px;
+        }
+
+        .form-floating > .form-control {
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .form-floating > .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.15);
+        }
+
+        .btn-login {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 30px;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            background: #155e97;
+            transform: translateY(-1px);
+        }
+
+        /* Demo credentials block */
+        .credentials-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
     </style>
+</head>
+<body>
 
+<div class="container d-flex justify-content-center">
+    <div class="login-card text-center">
+        <i class="bi bi-bezier2 brand-logo"></i>
+        <h2 class="brand-name mb-1">StrokeAI</h2>
+        <p class="text-muted small mb-4">Clinical AI Brain Stroke Diagnostic Platform</p>
+        
+        {% if msg %}
+        <div class="alert alert-danger alert-dismissible fade show text-start small py-2 rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ msg }}
+            <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
 
+        <form action="/" method="post">
+            <div class="form-floating mb-3">
+                <input type="text" name="username" class="form-control" id="userInput" placeholder="Username" required autocomplete="off">
+                <label for="userInput"><i class="bi bi-person me-2"></i>Username</label>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input type="password" name="password" class="form-control" id="passInput" placeholder="Password" required>
+                <label for="passInput"><i class="bi bi-lock me-2"></i>Password</label>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 small">
+                <div class="form-check text-start">
+                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <label class="form-check-label text-secondary" for="rememberMe">Remember me</label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-login w-100 mb-3">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Sign In
+            </button>
+        </form>
 
-    <!-- Custom styles for this template -->
-    <link href="./static/css/signin.css" rel="stylesheet">
-  </head>
-<body class="text-center" style="background-image:url('/static/images/cc.jpg'); background-repeat: no-repeat;background-size:100% 100%;" >
-<div class="container text-center">
-<main class="form-signin">
-  <form class="form-horizontal" action="/" method="post" enctype="multipart/form-data">
-    <img class="mb-4 text-white" src="./static/images/bezier.png" alt="" width="72" height="57">
-    <h1 class="h3 mb-3 fw-normal text-dark">Please sign in</h1>
-    <div class="form-floating">
-      <input type="text" name='username' class="form-control" id="floatingInput" placeholder="name@example.com" width="500">
-      <label for="floatingInput">username</label>
+        <div class="credentials-box p-3 mt-4 text-start">
+            <div class="fw-bold mb-1 text-secondary"><i class="bi bi-info-circle me-1"></i> Demo Login Accounts:</div>
+            <div class="row g-1 text-muted">
+                <div class="col-6"><strong>Admin:</strong> admin / password</div>
+                <div class="col-6"><strong>Doctor:</strong> doctor / password</div>
+                <div class="col-12"><strong>Receptionist:</strong> receptionist / password</div>
+            </div>
+        </div>
+
+        <p class="mt-4 mb-0 text-muted" style="font-size: 0.75rem;">&copy; 2026 StrokeAI Clinical Portal v1.0</p>
     </div>
-    <div class="form-floating">
-      <input type="password" name='password' class="form-control" id="floatingPassword" placeholder="Password" width="500">
-      <label for="floatingPassword">Password</label>
-    </div>
-
-    <div class="checkbox mb-3 text-white">
-      <label>
-        <input type="checkbox" value="remember-me"> Remember me
-      </label>
-    </div>
-    <button class="w-100 btn btn-lg btn-primary" type="submit" width="300">Sign in</button>
-    <p class="mt-5 mb-3 text-muted">© 2017–2025</p>
-      {% if msg %}
-     <h1>{{msg}}</h1>
-      {% endif %}
-  </form>
-</main>
 </div>
 
-
-
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

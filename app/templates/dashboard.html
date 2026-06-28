@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | StrokeAI{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- METRICS CARDS -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Total Patients</h6>
+                    <h3 class="mb-0 font-weight-bold">{{ stats.total_patients }}</h3>
+                </div>
+                <div class="bg-primary text-white rounded-3 p-3">
+                    <i class="bi bi-people-fill fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Today's Predictions</h6>
+                    <h3 class="mb-0 font-weight-bold">{{ stats.today_predictions }}</h3>
+                </div>
+                <div class="bg-success text-white rounded-3 p-3">
+                    <i class="bi bi-calendar-check fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Stroke Cases</h6>
+                    <h3 class="mb-0 font-weight-bold text-danger">{{ stats.stroke_cases }}</h3>
+                </div>
+                <div class="bg-danger text-white rounded-3 p-3">
+                    <i class="bi bi-heart-pulse-fill fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Normal Cases</h6>
+                    <h3 class="mb-0 font-weight-bold text-success">{{ stats.normal_cases }}</h3>
+                </div>
+                <div class="bg-info text-white rounded-3 p-3">
+                    <i class="bi bi-emoji-smile-fill fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- EXTRA METRICS -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Registered Doctors</h6>
+                    <h3 class="mb-0 font-weight-bold">{{ stats.total_doctors }}</h3>
+                </div>
+                <div class="bg-secondary text-white rounded-3 p-3">
+                    <i class="bi bi-person-workspace fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Avg Confidence</h6>
+                    <h3 class="mb-0 font-weight-bold">{{ "%.1f"|format(stats.avg_confidence) }}%</h3>
+                </div>
+                <div class="bg-warning text-dark rounded-3 p-3">
+                    <i class="bi bi-speedometer fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Avg Prediction Time</h6>
+                    <h3 class="mb-0 font-weight-bold">{{ "%.3f"|format(stats.avg_time) }}s</h3>
+                </div>
+                <div class="bg-dark text-white rounded-3 p-3">
+                    <i class="bi bi-hourglass-split fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Total Reports</h6>
+                    <h3 class="mb-0 font-weight-bold">{{ stats.total_predictions }}</h3>
+                </div>
+                <div class="bg-primary text-white rounded-3 p-3">
+                    <i class="bi bi-file-earmark-pdf-fill fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS SECTION -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-graph-up-arrow me-2"></i> Predictions Over Time</h5>
+            <canvas id="timePredictionsChart" style="max-height: 320px;"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-4">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-pie-chart-fill me-2"></i> Diagnosis Ratio</h5>
+            <canvas id="diagnosisRatioChart" style="max-height: 320px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card p-4">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-gender-ambiguous me-2"></i> Gender Distribution</h5>
+            <canvas id="genderDistChart" style="max-height: 250px;"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card p-4">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-calendar-range me-2"></i> Age Distribution</h5>
+            <canvas id="ageDistChart" style="max-height: 250px;"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-4">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-thunderbolt me-2"></i> Quick Actions</h5>
+            <div class="d-grid gap-2">
+                <a href="/patients" class="btn btn-outline-primary py-2 text-start"><i class="bi bi-person-fill-add me-2"></i> Register Patient</a>
+                <a href="/mri_predict" class="btn btn-outline-success py-2 text-start"><i class="bi bi-cloud-arrow-up-fill me-2"></i> Upload MRI & Predict</a>
+                <a href="/history" class="btn btn-outline-info py-2 text-start"><i class="bi bi-journal-medical me-2"></i> View Diagnostic History</a>
+                {% if session.get('role') == 'Admin' %}
+                    <a href="/settings" class="btn btn-outline-dark py-2 text-start"><i class="bi bi-sliders me-2"></i> Clinical Settings</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLES & RECENT ACTIVITY -->
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-clock-history me-2"></i> Recent AI Predictions</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Patient Name</th>
+                            <th>Diagnosis</th>
+                            <th>Confidence</th>
+                            <th>Time / Date</th>
+                            <th>Report</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if stats.recent_predictions %}
+                            {% for pred in stats.recent_predictions %}
+                            <tr>
+                                <td class="font-monospace">{{ pred.patient_id }}</td>
+                                <td>{{ pred.patient_name }}</td>
+                                <td>
+                                    <span class="badge {% if 'Stroke' in pred.prediction_result %}bg-danger{% else %}bg-success{% endif %}">
+                                        {{ pred.prediction_result }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.1f"|format(pred.confidence) }}%</td>
+                                <td class="small text-muted">{{ pred.predicted_at }}</td>
+                                <td>
+                                    <!-- Dynamic report generation endpoint -->
+                                    <form action="/submit" method="post" class="d-inline">
+                                        <input type="hidden" name="name" value="{{ pred.patient_name }}">
+                                        <input type="hidden" name="patient_id_direct" value="{{ pred.patient_id }}">
+                                        <button type="submit" name="action_view" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No diagnostic predictions recorded.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Logs Feed -->
+    <div class="col-lg-4">
+        <div class="card p-4">
+            <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-list-task me-2"></i> Recent Audit Logs</h5>
+            <ul class="list-group list-group-flush small" style="max-height: 280px; overflow-y: auto;">
+                {% if audit_logs %}
+                    {% for log in audit_logs %}
+                    <li class="list-group-item d-flex justify-content-between align-items-start px-0">
+                        <div class="ms-2 me-auto">
+                            <div class="font-weight-bold text-dark">{{ log.action }}</div>
+                            <span class="text-muted">{{ log.details }}</span>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill font-monospace" style="font-size: 0.65rem;">{{ log.created_at.split(' ')[1] }}</span>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="list-group-item text-center text-muted">No logs captured yet.</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ChartJS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. Time Predictions Line & Bar Chart
+    const ctxTime = document.getElementById('timePredictionsChart').getContext('2d');
+    new Chart(ctxTime, {
+        type: 'line',
+        data: {
+            labels: {{ stats.chart_daily_labels|tojson }},
+            datasets: [{
+                label: 'Predictions Per Day',
+                data: {{ stats.chart_daily_values|tojson }},
+                borderColor: '#0F4C81',
+                backgroundColor: 'rgba(15, 76, 129, 0.05)',
+                tension: 0.3,
+                fill: true,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+
+    // 2. Diagnosis Ratio Pie Chart
+    const ctxDiag = document.getElementById('diagnosisRatioChart').getContext('2d');
+    new Chart(ctxDiag, {
+        type: 'doughnut',
+        data: {
+            labels: ['Stroke Case', 'Normal Case'],
+            datasets: [{
+                data: [{{ stats.stroke_cases }}, {{ stats.normal_cases }}],
+                backgroundColor: ['#EF4444', '#10B981'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // 3. Gender Distribution Chart
+    const ctxGender = document.getElementById('genderDistChart').getContext('2d');
+    new Chart(ctxGender, {
+        type: 'pie',
+        data: {
+            labels: {{ stats.chart_gender_labels|tojson }},
+            datasets: [{
+                data: {{ stats.chart_gender_values|tojson }},
+                backgroundColor: ['#3B82F6', '#EC4899', '#94A3B8'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // 4. Age Distribution Chart
+    const ctxAge = document.getElementById('ageDistChart').getContext('2d');
+    new Chart(ctxAge, {
+        type: 'bar',
+        data: {
+            labels: {{ stats.chart_age_labels|tojson }},
+            datasets: [{
+                label: 'Patients count',
+                data: {{ stats.chart_age_values|tojson }},
+                backgroundColor: '#0F4C81',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+</script>
+{% endblock %}

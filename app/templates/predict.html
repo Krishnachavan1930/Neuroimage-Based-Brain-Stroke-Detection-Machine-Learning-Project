@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}MRI Brain Stroke Prediction | StrokeAI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .drag-drop-zone {
+        border: 2px dashed #a5b8c9;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: #fafbfc;
+        cursor: pointer;
+        transition: background 0.3s, border-color 0.3s;
+        position: relative;
+    }
+
+    .drag-drop-zone:hover, .drag-drop-zone.dragover {
+        background: #e8f5e9;
+        border-color: #2E7D32;
+    }
+
+    .drag-drop-zone i {
+        font-size: 3rem;
+        color: #0F4C81;
+        margin-bottom: 12px;
+    }
+
+    .preview-container img {
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-top: 15px;
+    }
+
+    /* Custom Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 76, 129, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .loading-spinner {
+        width: 4rem;
+        height: 4rem;
+        border: 5px solid rgba(255, 255, 255, 0.2);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
+        margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .result-alert {
+        border-left: 6px solid;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .result-alert-stroke {
+        background-color: #ffebee;
+        border-color: #d32f2f;
+        color: #c62828;
+    }
+
+    .result-alert-normal {
+        background-color: #e8f5e9;
+        border-color: #388e3c;
+        color: #2e7d32;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <h3 class="mb-2">Analyzing MRI Scan</h3>
+    <p class="text-white-50">Evaluating deep neural network classification model...</p>
+</div>
+
+<div class="card p-4 shadow-sm border-0 mb-4">
+    <h4 class="mb-1"><i class="bi bi-cpu text-primary me-2"></i> Clinical MRI Diagnostic Prediction</h4>
+    <p class="text-muted small mb-0">Evaluate MRI brain scans for stroke classifications using deep learning inference models.</p>
+</div>
+
+{% if not patient_data %}
+<!-- FILE SUBMIT FORM -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <form id="diagnosticForm" action="/submit" method="post" enctype="multipart/form-data">
+            
+            <!-- Patient Selector Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white font-weight-bold">
+                    <i class="bi bi-person-fill-check me-2"></i> 1. Select Patient for Diagnosis
+                </div>
+                <div class="card-body p-4">
+                    <label class="form-label fw-bold">Active Patient *</label>
+                    <select class="form-select form-select-lg" name="patient_id" required>
+                        <option value="">Choose Patient...</option>
+                        {% for patient in patients %}
+                            <option value="{{ patient.patient_id }}" {% if selected_patient == patient.patient_id %}selected{% endif %}>
+                                {{ patient.name }} (ID: {{ patient.patient_id }}, Age: {{ patient.age }} yrs, Gender: {{ patient.gender }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text small mt-2">
+                        Don't see your patient? <a href="/patients" class="text-primary font-weight-bold">Register patient here</a>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- MRI Upload Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white font-weight-bold">
+                    <i class="bi bi-images me-2"></i> 2. Upload MRI Neuroimage
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="drag-drop-zone" id="dropZone" onclick="document.getElementById('mriFileInput').click()">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                        <h5 class="mb-2">Drag and drop MRI scan here</h5>
+                        <p class="text-muted small">or click to browse local files (JPG, JPEG, PNG | Max 10MB)</p>
+                        <input type="file" id="mriFileInput" name="my_image" accept=".jpg,.jpeg,.png" style="display: none;" onchange="handleFileSelect(this)">
+                        
+                        <div id="fileInfoLabel" class="mt-2 text-primary font-weight-bold" style="display: none;"></div>
+                        <div class="preview-container" id="previewContainer" style="display: none;">
+                            <img id="imagePreview" src="" alt="MRI Scan Preview">
+                        </div>
+                    </div>
+                    <div id="clientValidationError" class="text-danger small mt-2" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Submit trigger -->
+            <div class="text-center mb-5">
+                <button type="submit" id="submitBtn" class="btn btn-success btn-lg px-5 rounded-pill shadow-sm">
+                    <i class="bi bi-activity me-2"></i> Run AI Diagnosis
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% else %}
+<!-- DISPLAY RESULTS DASHBOARD -->
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card shadow border-0 mb-5">
+            <div class="card-header bg-dark d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 text-white"><i class="bi bi-clipboard2-pulse-fill me-2"></i> Diagnostic Result Status</h5>
+                <span class="badge bg-secondary py-2 px-3 font-monospace">EVALUATED</span>
+            </div>
+            
+            <div class="card-body p-4">
+                <!-- Result Alert block -->
+                {% set is_stroke = "Stroke" in patient_data.prediction %}
+                <div class="result-alert {% if is_stroke %}result-alert-stroke{% else %}result-alert-normal{% endif %} mb-4 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-uppercase tracking-wider small mb-1">AI Classification Result</h6>
+                            <h2 class="mb-0 font-weight-bold">
+                                {% if is_stroke %}
+                                    <i class="bi bi-exclamation-octagon-fill me-2"></i> Stroke Detected
+                                {% else %}
+                                    <i class="bi bi-check-circle-fill me-2"></i> Normal (No Stroke Detected)
+                                {% endif %}
+                            </h2>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="text-uppercase small mb-1">Model Confidence</h6>
+                            <h2 class="mb-0 font-weight-bold">{{ "%.1f"|format(patient_data.confidence) }}%</h2>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 6px; background-color: rgba(0,0,0,0.05);">
+                        <div class="progress-bar" role="progressbar" style="width: {{ patient_data.confidence }}%; background-color: var(--primary-blue);" aria-valuenow="{{ patient_data.confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Patient details table block -->
+                    <div class="col-md-6 col-lg-7">
+                        <h5 class="border-bottom pb-2 mb-3 text-primary"><i class="bi bi-person-lines-fill me-2"></i> Patient Information</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-striped">
+                                <tbody>
+                                    <tr>
+                                        <th class="w-30 px-3 py-2 bg-light text-secondary">Patient Name</th>
+                                        <td class="px-3 py-2 font-weight-bold text-dark">{{ patient_data.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-3 py-2 bg-light text-secondary">Patient ID</th>
+                                        <td class="px-3 py-2 font-monospace">{{ patient_data.hospital_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-3 py-2 bg-light text-secondary">Age / Gender</th>
+                                        <td class="px-3 py-2">{{ patient_data.age }} Years / {{ patient_data.gender }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-3 py-2 bg-light text-secondary">Date of Birth</th>
+                                        <td class="px-3 py-2">{{ patient_data.dob }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-3 py-2 bg-light text-secondary">Contact Number</th>
+                                        <td class="px-3 py-2">{{ patient_data.mobile }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-3 py-2 bg-light text-secondary">Assigned Doctor</th>
+                                        <td class="px-3 py-2">{{ patient_data.doctor }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-3 py-2 bg-light text-secondary">Symptoms</th>
+                                        <td class="px-3 py-2 text-wrap">{{ patient_data.symptoms }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- MRI image preview and model metadata -->
+                    <div class="col-md-6 col-lg-5 text-center text-md-start">
+                        <h5 class="border-bottom pb-2 mb-3 text-primary"><i class="bi bi-image me-2"></i> Scan & Inference Meta</h5>
+                        <div class="card bg-light border-0 p-3 mb-3 d-inline-block text-center w-100 shadow-sm">
+                            <img src="/{{ patient_data.img_web_path }}" alt="MRI scan" class="img-fluid rounded-3 border" style="max-height: 220px;">
+                        </div>
+                        <div class="list-group list-group-flush shadow-sm rounded-3 overflow-hidden border">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-secondary"><i class="bi bi-calendar-event me-2"></i> Prediction Date</span>
+                                <span class="font-monospace text-dark">{{ patient_data.datetime }}</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-secondary"><i class="bi bi-cpu me-2"></i> AI Core Engine</span>
+                                <span class="font-weight-bold text-dark">{{ patient_data.model_name }} Network</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="text-secondary"><i class="bi bi-hourglass-split me-2"></i> Inference Time</span>
+                                <span class="font-monospace text-dark">{{ "%.3f"|format(patient_data.inference_time or 0.0) }} seconds</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disclaimer alert block -->
+                <div class="alert alert-warning mt-4 rounded-3 border-start border-warning border-3" role="alert">
+                    <div class="d-flex">
+                        <i class="bi bi-shield-fill-exclamation text-warning fs-3 me-3"></i>
+                        <div class="small">
+                            <strong>Clinical Warning:</strong> This report is generated by a computer vision model evaluating neuroimaging datasets. It serves solely as a diagnostic decision-support system and does not constitute a definitive medical diagnostic verdict. Double-check all predictions against official radiologist clinical observations.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOWNLOAD AND OPTIONS BUTTONS -->
+                <div class="text-center mt-4">
+                    <!-- Dynamic URL passing patient detail params or session key -->
+                    <a href="/download_report" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i> Download Report (PDF)
+                    </a>
+                    <button onclick="window.print()" class="btn btn-outline-secondary btn-lg rounded-pill px-4 ms-2">
+                        <i class="bi bi-printer me-2"></i> Print Screen
+                    </button>
+                    <a href="/mri_predict" class="btn btn-outline-dark btn-lg rounded-pill px-4 ms-2">
+                        <i class="bi bi-plus-circle me-2"></i> New Prediction
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('mriFileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const fileInfoLabel = document.getElementById('fileInfoLabel');
+    const validationError = document.getElementById('clientValidationError');
+    const diagnosticForm = document.getElementById('diagnosticForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    if (dropZone) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+    }
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFile(files[0]);
+        }
+    }
+
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            handleFile(input.files[0]);
+        }
+    }
+
+    function handleFile(file) {
+        validationError.style.display = 'none';
+        validationError.innerText = '';
+        fileInfoLabel.style.display = 'none';
+        previewContainer.style.display = 'none';
+
+        // 1. Validation - File Format
+        const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+        if (!allowedExtensions.exec(file.name)) {
+            showError("Invalid format. Only JPG, JPEG, and PNG formats are supported.");
+            fileInput.value = '';
+            return;
+        }
+
+        // 2. Validation - File Size (10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showError("File size exceeds 10 MB limit.");
+            fileInput.value = '';
+            return;
+        }
+
+        // 3. Show preview and details
+        fileInfoLabel.innerText = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+        fileInfoLabel.style.display = 'block';
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            imagePreview.src = e.target.result;
+            previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function showError(msg) {
+        validationError.innerText = msg;
+        validationError.style.display = 'block';
+    }
+
+    if (diagnosticForm) {
+        diagnosticForm.addEventListener('submit', function (e) {
+            if (!fileInput.files || fileInput.files.length === 0) {
+                e.preventDefault();
+                showError("Please upload a valid MRI Scan image before submitting.");
+                return;
+            }
+            loadingOverlay.classList.add('active');
+        });
+    }
+</script>
+{% endblock %}

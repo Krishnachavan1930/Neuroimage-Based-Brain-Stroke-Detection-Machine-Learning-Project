@@ -1,4 +1,5 @@
 import os
+import logging
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -88,9 +89,83 @@ def generate_pdf(patient_data, output_pdf_path):
         alignment=1
     )
     
-    # Header Section
-    story.append(Paragraph("Brain Stroke Prediction Report", title_style))
-    story.append(Paragraph("Brain Stroke Detection Diagnostic System", subtitle_style))
+    # Hospital Logo & Hospital Info Header
+    logo_path = patient_data.get('hospital_logo_path', None)
+    hospital_name = patient_data.get('hospital_name', 'Brain Stroke AI Diagnostic Center')
+    hospital_address = patient_data.get('hospital_address', 'Medical Science Park, Neurological Wing, Block-C')
+    
+    # Custom styling for hospital info
+    h_name_style = ParagraphStyle(
+        'HospitalName',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=16,
+        textColor=colors.HexColor('#0F4C81')
+    )
+    
+    h_addr_style = ParagraphStyle(
+        'HospitalAddress',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor('#666666')
+    )
+    
+    doc_type_style = ParagraphStyle(
+        'DocType',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=12,
+        leading=14,
+        textColor=colors.HexColor('#2E7D32'),
+        alignment=2 # Right align
+    )
+    
+    header_left = []
+    if logo_path and os.path.isfile(logo_path):
+        try:
+            # Scale logo
+            logo_img = Image(logo_path, width=40, height=40)
+            
+            # Put logo and names side by side
+            logo_table = Table(
+                [[logo_img, [Paragraph(hospital_name, h_name_style), Paragraph(hospital_address, h_addr_style)]]],
+                colWidths=[50, 250]
+            )
+            logo_table.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('LEFTPADDING', (0,0), (-1,-1), 0),
+                ('RIGHTPADDING', (0,0), (-1,-1), 0),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+                ('TOPPADDING', (0,0), (-1,-1), 0),
+            ]))
+            header_left.append(logo_table)
+        except Exception as ex:
+            logging.error(f"Error drawing logo in PDF header: {ex}")
+            header_left.append(Paragraph(hospital_name, h_name_style))
+            header_left.append(Paragraph(hospital_address, h_addr_style))
+    else:
+        header_left.append(Paragraph(hospital_name, h_name_style))
+        header_left.append(Paragraph(hospital_address, h_addr_style))
+        
+    header_right = [
+        Paragraph("DIAGNOSTIC REPORT", doc_type_style),
+        Spacer(1, 4),
+        Paragraph(f"Date: {datetime.now().strftime('%Y-%m-%d')}", ParagraphStyle('HeaderDate', parent=styles['Normal'], fontName='Helvetica-Oblique', fontSize=9, leading=11, textColor=colors.HexColor('#777777'), alignment=2))
+    ]
+    
+    header_table = Table([[header_left, header_right]], colWidths=[350, 182])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
+        ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+        ('TOPPADDING', (0,0), (-1,-1), 0),
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 10))
     
     # Divider Line
     divider = Table([[""]], colWidths=[532])
@@ -276,7 +351,8 @@ def generate_pdf(patient_data, output_pdf_path):
     img_path = patient_data.get('img_disk_path', None)
     left_panel = []
     
-    if img_path and os.path.exists(img_path):
+    mri_image_rendered = False
+    if img_path and os.path.isfile(img_path):
         # Calculate aspect ratio
         try:
             with PILImage.open(img_path) as pil_img:
@@ -284,28 +360,29 @@ def generate_pdf(patient_data, output_pdf_path):
                 aspect = h / w
                 img_width = 180
                 img_height = img_width * aspect
-        except Exception:
-            img_width = 180
-            img_height = 180
             
-        mri_image = Image(img_path, width=img_width, height=img_height)
-        
-        # Table wrapping image with card style border
-        img_table = Table([[mri_image]], colWidths=[img_width + 10])
-        img_table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,-1), colors.white),
-            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CCCCCC')),
-            ('TOPPADDING', (0,0), (-1,-1), 5),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-            ('LEFTPADDING', (0,0), (-1,-1), 5),
-            ('RIGHTPADDING', (0,0), (-1,-1), 5),
-        ]))
-        left_panel.append(Paragraph("<b>Uploaded MRI Scan</b>", label_style))
-        left_panel.append(Spacer(1, 6))
-        left_panel.append(img_table)
-    else:
+            mri_image = Image(img_path, width=img_width, height=img_height)
+            
+            # Table wrapping image with card style border
+            img_table = Table([[mri_image]], colWidths=[img_width + 10])
+            img_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), colors.white),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CCCCCC')),
+                ('TOPPADDING', (0,0), (-1,-1), 5),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+                ('LEFTPADDING', (0,0), (-1,-1), 5),
+                ('RIGHTPADDING', (0,0), (-1,-1), 5),
+            ]))
+            left_panel.append(Paragraph("<b>Uploaded MRI Scan</b>", label_style))
+            left_panel.append(Spacer(1, 6))
+            left_panel.append(img_table)
+            mri_image_rendered = True
+        except Exception as img_err:
+            logging.error(f"Failed to read or render MRI image in PDF: {img_err}")
+            
+    if not mri_image_rendered:
         left_panel.append(Paragraph("<i>No MRI Scan Image Available</i>", value_style))
         
     # Combine panels using a parent layout table
