@@ -9,3 +9,8 @@ __pycache__/
 # Ignore large model files and raw datasets
 *.h5
 brain-stroke-module-1/Dataset/
+app/static/Brain_Stroke_Report_*.pdf
+app/static/report_*.pdf
+app/static/50 (*).jpg
+app/static/58 (*).jpg
+

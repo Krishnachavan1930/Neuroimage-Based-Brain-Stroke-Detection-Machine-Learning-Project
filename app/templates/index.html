@@ -4,116 +4,668 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brain Stroke</title>
-    <link rel = "icon" href ="./static/images/bezier.png" type = "image/x-icon">
+  <title>Brain Stroke Detection System</title>
+  <link rel="icon" href="./static/images/bezier.png" type="image/x-icon">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-  <link rel="stylesheet" href="./static/css/solution.css">
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <style>
+    :root {
+      --primary-color: #0F4C81; /* Clinical Dark Blue */
+      --secondary-color: #2E7D32; /* Clinical Medical Green */
+      --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      --accent-color: #e8f5e9;
+      --card-shadow: 0 10px 30px rgba(15, 76, 129, 0.08);
+      --hover-shadow: 0 15px 35px rgba(15, 76, 129, 0.15);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background-gradient);
+      min-height: 100vh;
+      color: #333333;
+    }
+
+    h1, h2, h3, h4, h5, .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+    }
+
+    /* Navbar Styling */
+    .navbar {
+      background: rgba(255, 255, 255, 0.9) !important;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(15, 76, 129, 0.1);
+    }
+
+    .navbar-brand {
+      color: var(--primary-color) !important;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-link {
+      font-weight: 500;
+      color: #555555 !important;
+      transition: color 0.3s;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color) !important;
+    }
+
+    /* Hero Jumbotron Section */
+    .hero-section {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #1d6fa5 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 40px;
+      margin-top: 30px;
+      box-shadow: 0 8px 32px rgba(15, 76, 129, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 400px;
+      height: 400px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      transform: rotate(45deg);
+    }
+
+    /* Professional Card Layouts */
+    .card {
+      border: none;
+      border-radius: 16px;
+      background: white;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    .card-header {
+      background: linear-gradient(45deg, var(--primary-color), #1d6fa5);
+      color: white;
+      font-weight: 600;
+      border-bottom: none;
+      padding: 18px 24px;
+    }
+
+    /* Form Fields */
+    .form-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #495057;
+    }
+
+    .form-control, .form-select {
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.15);
+    }
+
+    /* Drag and Drop Zone */
+    .drag-drop-zone {
+      border: 2px dashed #a5b8c9;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      background: #fafbfc;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+      position: relative;
+    }
+
+    .drag-drop-zone:hover, .drag-drop-zone.dragover {
+      background: var(--accent-color);
+      border-color: var(--secondary-color);
+    }
+
+    .drag-drop-zone i {
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      margin-bottom: 12px;
+    }
+
+    /* Preview Image */
+    .preview-container img {
+      max-width: 100%;
+      max-height: 250px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 15px;
+    }
+
+    /* Primary Diagnostic Action Button */
+    .btn-predict {
+      background: linear-gradient(135deg, var(--secondary-color) 0%, #388e3c 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 12px 35px;
+      border-radius: 30px;
+      border: none;
+      box-shadow: 0 4px 15px rgba(56, 142, 60, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-predict:hover:not(:disabled) {
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(56, 142, 60, 0.4);
+    }
+
+    .btn-predict:disabled {
+      background: #9fa8a3;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* Custom Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 76, 129, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .loading-spinner {
+      width: 4rem;
+      height: 4rem;
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s infinite linear;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Results Dashboard Alert Styles */
+    .result-alert {
+      border-left: 6px solid;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .result-alert-stroke {
+      background-color: #ffebee;
+      border-color: #d32f2f;
+      color: #c62828;
+    }
+
+    .result-alert-normal {
+      background-color: #e8f5e9;
+      border-color: #388e3c;
+      color: #2e7d32;
+    }
+
+    /* Confidence Progress Bar */
+    .progress-bar-confidence {
+      background-color: var(--primary-color);
+    }
+  </style>
 </head>
 
-<body >
-  <section>
-    <!--NAV BAR-->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-     <nav class="navbar bg-body-tertiary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-          <img src="./static/images/bezier.svg" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
-        </a>
+<body>
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <h3 class="mb-2">Analyzing MRI Scan</h3>
+    <p class="text-white-50">Deep Neural Network evaluating diagnostic models...</p>
+  </div>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <img src="./static/images/bezier.svg" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+        <span>Brain Stroke Clinical System</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav align-items-center">
+          <li class="nav-item">
+            <span class="badge bg-primary px-3 py-2 me-3"><i class="bi bi-shield-lock-fill me-1"></i> Admin Portal</span>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-danger btn-sm px-3 rounded-pill" href="/logout"><i class="bi bi-box-arrow-right me-1"></i> Log-out</a>
+          </li>
+        </ul>
       </div>
-    </nav>
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Brain Stroke Prediction</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="/logout">Log-out</a>
-            </li>
-          </ul>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <!-- Hero Jumbotron Header -->
+    <div class="hero-section text-center text-md-start">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="display-5 mb-2">Diagnostic MRI Evaluation</h1>
+          <p class="lead mb-0 text-white-50">Neural Network computer-assisted diagnosis tool for clinical stroke classification.</p>
+        </div>
+        <div class="col-md-4 text-center d-none d-md-block">
+          <i class="bi bi-cpu text-white" style="font-size: 5.5rem; opacity: 0.85;"></i>
         </div>
       </div>
-    </nav>
-
-  </section>
-
-  <section>
-    <!--jumbotron-->
-    <div class="mt-4 p-5 bg-primary text-white rounded">
-    <div class="container text-center">
-        <h1>Brain Stroke Prediction</h1>
-         <p><h5>The brain stroke is being detected using CNN.</h5></p>
     </div>
+
+    <!-- MAIN FORM AND INPUTS (Hidden if displaying results, unless we keep it visible. Let's toggle) -->
+    {% if not patient_data %}
+    <div class="row mt-4">
+      <div class="col-lg-12">
+        
+        <!-- Alerts block -->
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        
+        <form id="diagnosticForm" action="/submit" method="post" enctype="multipart/form-data">
+          <!-- CARD 1: Patient Information -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="bi bi-person-fill-add me-2"></i> Patient Information (Required Fields Marked with *)
+            </div>
+            <div class="card-body p-4">
+              <div class="row g-3">
+                <div class="col-md-6 col-lg-4">
+                  <label for="pName" class="form-label">Patient Name *</label>
+                  <input type="text" class="form-control" id="pName" name="name" required placeholder="Enter full name">
+                </div>
+                <div class="col-md-3 col-lg-2">
+                  <label for="pAge" class="form-label">Age *</label>
+                  <input type="number" class="form-control" id="pAge" name="age" required min="1" max="120" placeholder="Years">
+                </div>
+                <div class="col-md-3 col-lg-2">
+                  <label for="pGender" class="form-label">Gender *</label>
+                  <select class="form-select" id="pGender" name="gender" required>
+                    <option value="">Choose...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label for="pDob" class="form-label">Date of Birth *</label>
+                  <input type="date" class="form-control" id="pDob" name="dob" required>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label for="pMobile" class="form-label">Mobile Number</label>
+                  <input type="tel" class="form-control" id="pMobile" name="mobile" placeholder="Contact number">
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label for="pEmail" class="form-label">Email Address (Optional)</label>
+                  <input type="email" class="form-control" id="pEmail" name="email" placeholder="patient@example.com">
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label for="pHospId" class="form-label">Hospital ID (Optional - Autogenerated if Empty)</label>
+                  <input type="text" class="form-control" id="pHospId" name="hospital_id" placeholder="HOSP-YYYY-XXXX">
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <label for="pDoctor" class="form-label">Referring Doctor (Optional)</label>
+                  <input type="text" class="form-control" id="pDoctor" name="doctor" placeholder="Dr. Name">
+                </div>
+                <div class="col-md-12">
+                  <label for="pSymptoms" class="form-label">Admitting Symptoms</label>
+                  <textarea class="form-control" id="pSymptoms" name="symptoms" rows="2" placeholder="Describe symptoms (e.g. unilateral weakness, slurred speech)"></textarea>
+                </div>
+                <div class="col-md-12">
+                  <label for="pNotes" class="form-label">Additional Clinical Notes</label>
+                  <textarea class="form-control" id="pNotes" name="notes" rows="2" placeholder="Any history, medications, or specific details"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 2: MRI Upload Section -->
+          <div class="card mb-4">
+            <div class="card-header bg-primary">
+              <i class="bi bi-images me-2"></i> MRI Scan Upload & Validation
+            </div>
+            <div class="card-body p-4 text-center">
+              <div class="drag-drop-zone" id="dropZone" onclick="document.getElementById('mriFileInput').click()">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+                <h5 class="mb-2">Drag and drop patient MRI scan here</h5>
+                <p class="text-muted small">or click to browse local files (Supports JPG, JPEG, PNG | Max 10MB)</p>
+                <input type="file" id="mriFileInput" name="my_image" accept=".jpg,.jpeg,.png" style="display: none;" onchange="handleFileSelect(this)">
+                
+                <div id="fileInfoLabel" class="mt-2 text-primary font-weight-bold" style="display: none;"></div>
+                <div class="preview-container" id="previewContainer" style="display: none;">
+                  <img id="imagePreview" src="" alt="MRI Scan Preview">
+                </div>
+              </div>
+              <div id="clientValidationError" class="text-danger small mt-2" style="display: none;"></div>
+            </div>
+          </div>
+
+          <!-- BUTTON SUBMIT -->
+          <div class="text-center mb-5">
+            <button type="submit" id="submitBtn" class="btn btn-predict">
+              <i class="bi bi-activity me-2"></i> Predict Stroke
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </section>
-  <br><br><br>
-  <section>
-    <!--form-->
-   <div class="container text-center">
-        <div class="mt-1">
-            <h1 class="text-success">Please upload image.....</h1>
-        </div>
-       <form class="form-horizontal" action="/submit" method="post" enctype="multipart/form-data">
-        <div class="input-group ">
-            <input type="file" class="form-control"
-                   id="inputGroupFile02" name="my_image">
-        </div>
-        <br><br>
-        <button type="submit" class="btn btn-success">Submit</button>
-       </form>
-   </div>
-  </section>
-  <br><br><br>
 
-  <section>
-    <div class="container text-center">
+    <!-- PREDICTION RESULTS DASHBOARD (Visible only if results are ready) -->
+    {% else %}
+    <div class="row mt-4">
+      <div class="col-lg-12">
+        <div class="card mb-4 shadow border-0">
+          <div class="card-header bg-dark d-flex justify-content-between align-items-center py-3">
+            <h4 class="mb-0 text-white"><i class="bi bi-clipboard2-pulse-fill me-2"></i> Clinical Diagnostic Result</h4>
+            <span class="badge bg-secondary py-2 px-3 font-monospace">STATUS: EVALUATED</span>
+          </div>
+          <div class="card-body p-4">
+            
+            <!-- SECTION 3: Prediction Result Alert Block -->
+            {% set is_stroke = "Stroke" in patient_data.prediction %}
+            <div class="result-alert {% if is_stroke %}result-alert-stroke{% else %}result-alert-normal{% endif %} mb-4 shadow-sm">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 class="text-uppercase tracking-wider small mb-1">AI Classification Status</h6>
+                  <h2 class="mb-0 font-weight-bold">
+                    {% if is_stroke %}
+                      <i class="bi bi-exclamation-octagon-fill me-2"></i> Stroke Detected
+                    {% else %}
+                      <i class="bi bi-check-circle-fill me-2"></i> Normal (No Stroke Detected)
+                    {% endif %}
+                  </h2>
+                </div>
+                
+                <!-- SECTION 4: Confidence Score -->
+                {% if patient_data.confidence is not none %}
+                <div class="text-end">
+                  <h6 class="text-uppercase small mb-1">Model Confidence</h6>
+                  <h2 class="mb-0 font-weight-bold">{{ "%.1f"|format(patient_data.confidence) }}%</h2>
+                </div>
+                {% endif %}
+              </div>
+              
+              {% if patient_data.confidence is not none %}
+              <div class="progress mt-3" style="height: 6px; background-color: rgba(0,0,0,0.05);">
+                <div class="progress-bar progress-bar-confidence" role="progressbar" style="width: {{ patient_data.confidence }}%;" aria-valuenow="{{ patient_data.confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              {% endif %}
+            </div>
 
-    {% if prediction %}
-        {{error}}
-      <img height="50%" src="{{img_path}}" width="50%">
-       <br><br><br>
-      <h2> Your Prediction: <i> {{prediction}} </i></h2>
+            <div class="row g-4">
+              <!-- SECTION 1: Patient Details Card -->
+              <div class="col-md-6 col-lg-7">
+                <h5 class="border-bottom pb-2 mb-3 text-primary"><i class="bi bi-person-lines-fill me-2"></i> Patient Information</h5>
+                <div class="table-responsive">
+                  <table class="table table-sm table-bordered table-striped">
+                    <tbody>
+                      <tr>
+                        <th class="w-30 px-3 py-2 bg-light text-secondary">Patient Name</th>
+                        <td class="px-3 py-2 font-weight-bold text-dark">{{ patient_data.name }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Hospital ID</th>
+                        <td class="px-3 py-2 font-monospace">{{ patient_data.hospital_id }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Age</th>
+                        <td class="px-3 py-2">{{ patient_data.age }} Years</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Gender</th>
+                        <td class="px-3 py-2">{{ patient_data.gender }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Date of Birth</th>
+                        <td class="px-3 py-2">{{ patient_data.dob }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Mobile Number</th>
+                        <td class="px-3 py-2">{{ patient_data.mobile }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Email Address</th>
+                        <td class="px-3 py-2">{{ patient_data.email }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Referring Doctor</th>
+                        <td class="px-3 py-2">{{ patient_data.doctor }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Symptoms</th>
+                        <td class="px-3 py-2 text-wrap">{{ patient_data.symptoms }}</td>
+                      </tr>
+                      <tr>
+                        <th class="px-3 py-2 bg-light text-secondary">Additional Notes</th>
+                        <td class="px-3 py-2 text-wrap">{{ patient_data.notes }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- SECTION 2 & 6: Uploaded MRI Image & Model Metadata -->
+              <div class="col-md-6 col-lg-5 text-center text-md-start">
+                <h5 class="border-bottom pb-2 mb-3 text-primary"><i class="bi bi-image me-2"></i> Diagnosed Scan & System Info</h5>
+                
+                <div class="card bg-light border-0 p-3 mb-3 d-inline-block text-center w-100 shadow-sm">
+                  <img src="/{{ patient_data.img_web_path }}" alt="Diagnosed MRI Scan" class="img-fluid rounded-3 border" style="max-height: 250px;">
+                  <div class="mt-2 small text-muted font-monospace">{{ patient_data.img_web_path.split('/')[-1] }}</div>
+                </div>
+
+                <!-- SECTION 5 & 6: Metadata and Date/Time -->
+                <div class="list-group list-group-flush shadow-sm rounded-3 overflow-hidden border">
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-secondary"><i class="bi bi-calendar-event me-2"></i> Prediction Date & Time</span>
+                    <span class="font-monospace text-dark">{{ patient_data.datetime }}</span>
+                  </div>
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-secondary"><i class="bi bi-cpu me-2"></i> Model Engine</span>
+                    <span class="font-weight-bold text-dark">{{ patient_data.model_name }} Network</span>
+                  </div>
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-secondary"><i class="bi bi-aspect-ratio me-2"></i> Image Resolution</span>
+                    <span class="font-monospace text-dark">224 × 224</span>
+                  </div>
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="text-secondary"><i class="bi bi-braces me-2"></i> Analytical Framework</span>
+                    <span class="text-dark">TensorFlow / Keras</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Clinical Disclaimer Box -->
+            <div class="alert alert-warning mt-4 rounded-3 border-start border-warning border-3" role="alert">
+              <div class="d-flex">
+                <i class="bi bi-shield-fill-exclamation text-warning fs-3 me-3"></i>
+                <div class="small">
+                  <strong>Clinical Advisory Disclaimer:</strong> This report is generated using an artificial intelligence model evaluating neurological imaging. The prediction is intended as clinical support and decision tool for qualified healthcare practitioners. It must not be interpreted as a final diagnostic medical verdict. Final clinical confirmation remains the responsibility of the neurologist.
+                </div>
+              </div>
+            </div>
+
+            <!-- PDF DOWNLOAD BUTTON -->
+            <div class="text-center mt-4">
+              <a href="/download_report" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Download Medical Report (PDF)</a>
+              <a href="/" class="btn btn-outline-secondary btn-lg rounded-pill px-4 ms-2"><i class="bi bi-arrow-left me-2"></i> New Diagnostic Scan</a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
     {% endif %}
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-4 bg-white border-top mt-5">
+    <div class="container text-muted small">
+      © 2026 Brain Stroke Detection Clinical System v1.0. All Rights Reserved.
     </div>
-  </section>
+  </footer>
 
+  <script>
+    // Drag and Drop Logic
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('mriFileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const fileInfoLabel = document.getElementById('fileInfoLabel');
+    const validationError = document.getElementById('clientValidationError');
+    const diagnosticForm = document.getElementById('diagnosticForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
+    if (dropZone) {
+      // Prevent default drag behaviors
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
 
+      // Highlight drop zone when item is dragged over it
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+      });
 
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+      });
 
+      // Handle dropped files
+      dropZone.addEventListener('drop', handleDrop, false);
+    }
 
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        handleFile(files[0]);
+      }
+    }
 
+    function handleFileSelect(input) {
+      if (input.files && input.files[0]) {
+        handleFile(input.files[0]);
+      }
+    }
 
+    function handleFile(file) {
+      validationError.style.display = 'none';
+      validationError.innerText = '';
+      fileInfoLabel.style.display = 'none';
+      previewContainer.style.display = 'none';
 
+      // 1. Validation - File Format
+      const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+      if (!allowedExtensions.exec(file.name)) {
+        showError("Invalid format. Only JPG, JPEG, and PNG formats are supported.");
+        fileInput.value = '';
+        return;
+      }
 
+      // 2. Validation - File Size (10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showError("File size exceeds 10 MB limit.");
+        fileInput.value = '';
+        return;
+      }
 
+      // 3. Show preview and details
+      fileInfoLabel.innerText = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+      fileInfoLabel.style.display = 'block';
 
-  <section>
-    <!-- Footer -->
-    <footer class="text-center text-lg-start bg-light text-muted">
-      <!-- Copyright -->
-      <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
-        © 2025 Copyright:
-        <a class="text-reset fw-bold" href="https://mdbootstrap.com/">MDBootstrap.com</a>
-      </div>
-      <!-- Copyright -->
-    </footer>
-<!-- Footer -->
-  </section>
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imagePreview.src = e.target.result;
+        previewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
 
+    function showError(msg) {
+      validationError.innerText = msg;
+      validationError.style.display = 'block';
+    }
 
+    // Form Submit Loader
+    if (diagnosticForm) {
+      diagnosticForm.addEventListener('submit', function (e) {
+        // Double check validation before triggering loading screen
+        const pName = document.getElementById('pName').value.trim();
+        const pAge = document.getElementById('pAge').value.trim();
+        const pGender = document.getElementById('pGender').value;
+        const pDob = document.getElementById('pDob').value;
 
+        if (!pName || !pAge || !pGender || !pDob) {
+          return; // Allow standard form validation to work
+        }
 
+        if (!fileInput.files || fileInput.files.length === 0) {
+          e.preventDefault();
+          showError("Please upload a valid MRI Scan image.");
+          return;
+        }
+
+        // Show loading screen and disable button
+        loadingOverlay.classList.add('active');
+        document.getElementById('submitBtn').disabled = true;
+      });
+    }
+  </script>
 </body>
-<script type="text/javascript">
-  $(document).ready(function() {
-    $('.carousel').carousel({
-      interval: 1200
-    })
-  });
-</script>
 
 </html>
